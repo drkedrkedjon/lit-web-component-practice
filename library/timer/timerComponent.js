@@ -35,19 +35,31 @@ export class TimerComponent extends LitElement {
   `;
   static properties = {
     event: { type: Boolean },
+    title: { type: String },
   };
 
   constructor() {
     super();
     this.event = false;
+    this.title = "--";
   }
+
+  playTimer = () => {
+    const event = new CustomEvent("play", {
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(this.playEvent);
+  };
 
   render() {
     return html`
       <div class="timer-container">
         ${this.event
-          ? html`<shopping-cart-timer></shopping-cart-timer>`
-          : html`<event-timer></event-timer>`}
+          ? html`<event-timer></event-timer>`
+          : html`<shopping-cart-timer
+              .title=${this.title}
+            ></shopping-cart-timer>`}
         <div class="btn-container">
           <button @click=${this.pauseTimer}>Pause</button>
           <button @click=${this.playTimer}>Play</button>
