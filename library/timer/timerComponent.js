@@ -45,11 +45,27 @@ export class TimerComponent extends LitElement {
   }
 
   playTimer = () => {
-    const event = new CustomEvent("play", {
+    const playEvent = new CustomEvent("play", {
       bubbles: true,
       composed: true,
     });
-    this.dispatchEvent(this.playEvent);
+    this.dispatchEvent(playEvent);
+  };
+
+  pauseTimer = () => {
+    const pauseEvent = new CustomEvent("pause", {
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(pauseEvent);
+  };
+
+  resetTimer = () => {
+    const resetEvent = new CustomEvent("reset", {
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(resetEvent);
   };
 
   render() {
