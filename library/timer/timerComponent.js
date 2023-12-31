@@ -1,6 +1,6 @@
 import { LitElement, html, css } from "lit-element";
-import { ShoppingCartTimer } from "./shoppingCartTimer";
-import { EventTimer } from "./eventTimer";
+// import { ShoppingCartTimer } from "./shoppingCartTimer";
+// import { EventTimer } from "./eventTimer";
 
 export class TimerComponent extends LitElement {
   static styles = css`
@@ -36,12 +36,18 @@ export class TimerComponent extends LitElement {
   static properties = {
     event: { type: Boolean },
     title: { type: String },
+    btnPause: { type: Boolean },
+    btnPlay: { type: Boolean },
+    btnReset: { type: Boolean },
   };
 
   constructor() {
     super();
     this.event = false;
     this.title = "--";
+    this.btnPause = false;
+    this.btnPlay = false;
+    this.btnReset = false;
   }
 
   playTimer = () => {
@@ -77,9 +83,15 @@ export class TimerComponent extends LitElement {
               .title=${this.title}
             ></shopping-cart-timer>`}
         <div class="btn-container">
-          <button @click=${this.pauseTimer}>Pause</button>
-          <button @click=${this.playTimer}>Play</button>
-          <button @click=${this.resetTimer}>Reset</button>
+          ${this.btnPause
+            ? html`<button @click=${this.pauseTimer}>Pause</button>`
+            : html``}
+          ${this.btnPlay
+            ? html`<button @click=${this.playTimer}>Play</button>`
+            : html``}
+          ${this.btnReset
+            ? html`<button @click=${this.resetTimer}>Reset</button>`
+            : html``}
         </div>
       </div>
     `;
@@ -87,3 +99,7 @@ export class TimerComponent extends LitElement {
 }
 
 window.customElements.define("timer-component", TimerComponent);
+
+// <button @click=${this.pauseTimer}>Pause</button>
+// <button @click=${this.playTimer}>Play</button>
+// <button @click=${this.resetTimer}>Reset</button>
