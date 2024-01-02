@@ -32,6 +32,11 @@ export class TimerComponent extends LitElement {
       scale: 1.03;
       box-shadow: 0 0 0.2rem var(--primary-color);
     }
+    h3 {
+      text-align: center;
+      margin-block: 0;
+      color: var(--primary-color);
+    }
   `;
   static properties = {
     eventtimer: { type: Boolean },
@@ -44,6 +49,10 @@ export class TimerComponent extends LitElement {
     autostart: { type: Boolean },
     start: { type: Number },
     limit: { type: Number },
+    playDisabled: { type: Boolean },
+    pauseDisabled: { type: Boolean },
+    resetDisabled: { type: Boolean },
+    dobledigits: { type: Boolean },
   };
   constructor() {
     super();
@@ -57,7 +66,41 @@ export class TimerComponent extends LitElement {
     this.autostart = false;
     this.start = 0;
     this.limit = 0;
+    this.playDisabled = false;
+    this.pauseDisabled = true;
+    this.resetDisabled = false;
+    this.dobledigits = false;
   }
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener("timer-end", this.handleTimerEnd);
+    window.addEventListener("timer-autostart", this.handleAutoplayTimer);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener("timer-end", this.handleTimerEnd);
+    window.removeEventListener("timer-autostart", this.handleAutoplayTimer);
+  }
+
+  updated() {
+    this.alerta = this.shadowRoot.getElementById("alerta");
+  }
+
+  handleTimerEnd = (event) => {
+    if (this.autoreset) {
+      return;
+    }
+    this.alerta.textContent = event.detail.message;
+    this.playDisabled = false;
+    this.pauseDisabled = true;
+  };
+
+  handleAutoplayTimer = () => {
+    this.playDisabled = true;
+    this.pauseDisabled = false;
+  };
 
   playTimer = () => {
     const playEvent = new CustomEvent("play", {
@@ -65,6 +108,8 @@ export class TimerComponent extends LitElement {
       composed: true,
     });
     this.dispatchEvent(playEvent);
+    this.playDisabled = true;
+    this.pauseDisabled = false;
   };
   pauseTimer = () => {
     const pauseEvent = new CustomEvent("pause", {
@@ -72,6 +117,8 @@ export class TimerComponent extends LitElement {
       composed: true,
     });
     this.dispatchEvent(pauseEvent);
+    this.playDisabled = false;
+    this.pauseDisabled = true;
   };
   resetTimer = () => {
     const resetEvent = new CustomEvent("reset", {
@@ -84,6 +131,7 @@ export class TimerComponent extends LitElement {
   render() {
     return html`
       <div class="timer-container">
+        <h3 id="alerta">Timer</h3>
         ${this.eventtimer
           ? html`<event-timer></event-timer>`
           : html`<shopping-cart-timer
@@ -93,16 +141,32 @@ export class TimerComponent extends LitElement {
               .autostart=${this.autostart}
               .start=${this.start}
               .limit=${this.limit}
+              .dobledigits=${this.dobledigits}
             ></shopping-cart-timer>`}
         <div class="btn-container">
           ${this.btnpause
-            ? html`<button @click=${this.pauseTimer}>Pause</button>`
+            ? html`<button
+                ?disabled=${this.pauseDisabled}
+                @click=${this.pauseTimer}
+              >
+                Pause
+              </button>`
             : html``}
           ${this.btnplay
-            ? html`<button @click=${this.playTimer}>Play</button>`
+            ? html`<button
+                ?disabled=${this.playDisabled}
+                @click=${this.playTimer}
+              >
+                Play
+              </button>`
             : html``}
           ${this.btnreset
-            ? html`<button @click=${this.resetTimer}>Reset</button>`
+            ? html`<button
+                ?disabled=${this.resetDisabled}
+                @click=${this.resetTimer}
+              >
+                Reset
+              </button>`
             : html``}
         </div>
       </div>

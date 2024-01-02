@@ -24,7 +24,8 @@ export class ShoppingCartTimer extends LitElement {
 
   constructor() {
     super();
-    this.startInSeconds = null;
+    this.startInSeconds = 0;
+    this.timer = null;
   }
 
   static properties = {
@@ -34,6 +35,7 @@ export class ShoppingCartTimer extends LitElement {
     autostart: { type: Boolean },
     start: { type: Number },
     limit: { type: Number },
+    dobledigits: { type: Boolean },
   };
 
   connectedCallback() {
@@ -41,8 +43,15 @@ export class ShoppingCartTimer extends LitElement {
     window.addEventListener("play", this.handlePlayTimer, true);
     window.addEventListener("pause", this.handlePauseTimer, true);
     window.addEventListener("reset", this.handleResetTimer, true);
+
+    // AUTOSTART
     if (this.autostart) {
       this.handlePlayTimer();
+      const event = new CustomEvent("timer-autostart", {
+        bubbles: true,
+        composed: true,
+      });
+      this.dispatchEvent(event);
     }
   }
   disconnectedCallback() {
@@ -51,7 +60,6 @@ export class ShoppingCartTimer extends LitElement {
     window.removeEventListener("pause", this.handlePauseTimer, true);
     window.removeEventListener("reset", this.handleResetTimer, true);
   }
-
   updated() {
     this.minutesElement = this.shadowRoot.getElementById("minutes");
     this.secondsElement = this.shadowRoot.getElementById("seconds");
@@ -60,17 +68,35 @@ export class ShoppingCartTimer extends LitElement {
     const minutesValue = Math.floor(time / 60);
     const secondsValue = time % 60;
 
-    this.minutesElement.textContent = minutesValue;
-    this.secondsElement.textContent = secondsValue;
+    // this.minutesElement.textContent = minutesValue;
+    this.minutesElement.textContent =
+      this.dobledigits && minutesValue < 10 ? `0${minutesValue}` : minutesValue;
+    this.secondsElement.textContent =
+      this.dobledigits && secondsValue < 10 ? `0${secondsValue}` : secondsValue;
+    // this.secondsElement.textContent = secondsValue;
   };
 
   handlePlayTimer = () => {
-    this.startInSeconds = this.start;
+    if (this.startInSeconds === 0) {
+      this.startInSeconds = this.start;
+    }
 
     if (this.reverse) {
-      const timer = setInterval(() => {
+      this.timer = setInterval(() => {
         if (this.startInSeconds <= 0) {
-          clearInterval(timer);
+          clearInterval(this.timer);
+
+          // EVENT END TIMER
+          const event = new CustomEvent("timer-end", {
+            detail: {
+              message: "Timer ended",
+            },
+            bubbles: true,
+            composed: true,
+          });
+          this.dispatchEvent(event);
+
+          //  AUTORESET
           if (this.autoreset) {
             this.startInSeconds = this.start;
             this.renderDisplay(this.startInSeconds);
@@ -83,9 +109,16 @@ export class ShoppingCartTimer extends LitElement {
       }, 1000);
     } else {
       this.startInSeconds = 0;
-      const timer = setInterval(() => {
+      this.timer = setInterval(() => {
         if (this.startInSeconds >= this.limit) {
-          clearInterval(timer);
+          clearInterval(this.timer);
+          const event = new CustomEvent("timer-end", {
+            detail: {
+              message: "Timer ended",
+            },
+            bubbles: true,
+            composed: true,
+          });
           if (this.autoreset) {
             this.startInSeconds = 0;
             this.renderDisplay(this.startInSeconds);
@@ -100,7 +133,7 @@ export class ShoppingCartTimer extends LitElement {
   };
 
   handlePauseTimer = () => {
-    console.log("Child PAUSE");
+    clearInterval(this.timer);
   };
   handleResetTimer = () => {
     console.log("Child RESET");
