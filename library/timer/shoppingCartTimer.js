@@ -21,15 +21,12 @@ export class ShoppingCartTimer extends LitElement {
       }
     `;
   }
-
   constructor() {
     super();
-    this.startInSeconds = 0;
+    this.startInSeconds = null;
     this.timer = null;
   }
-
   static properties = {
-    title: { type: String },
     reverse: { type: Boolean },
     autoreset: { type: Boolean },
     autostart: { type: Boolean },
@@ -37,12 +34,21 @@ export class ShoppingCartTimer extends LitElement {
     limit: { type: Number },
     dobledigits: { type: Boolean },
   };
-
+  // What happens when the component is mounted
   connectedCallback() {
     super.connectedCallback();
     window.addEventListener("play", this.handlePlayTimer, true);
     window.addEventListener("pause", this.handlePauseTimer, true);
     window.addEventListener("reset", this.handleResetTimer, true);
+  }
+
+  firstUpdated() {
+    if (this.reverse) {
+      this.startInSeconds = this.start;
+    } else if (!this.reverse) {
+      this.startInSeconds = 0;
+    }
+    // this.renderDisplay(this.startInSeconds); PENDIENTE
 
     // AUTOSTART
     if (this.autostart) {
@@ -54,33 +60,31 @@ export class ShoppingCartTimer extends LitElement {
       this.dispatchEvent(event);
     }
   }
+
+  // What happens when the component is unmounted
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener("play", this.handlePlayTimer, true);
     window.removeEventListener("pause", this.handlePauseTimer, true);
     window.removeEventListener("reset", this.handleResetTimer, true);
   }
+  // when we want to update the DOM before the component is rendered
   updated() {
     this.minutesElement = this.shadowRoot.getElementById("minutes");
     this.secondsElement = this.shadowRoot.getElementById("seconds");
   }
+  // Function that renders data to display
   renderDisplay = (time) => {
     const minutesValue = Math.floor(time / 60);
     const secondsValue = time % 60;
 
-    // this.minutesElement.textContent = minutesValue;
     this.minutesElement.textContent =
       this.dobledigits && minutesValue < 10 ? `0${minutesValue}` : minutesValue;
     this.secondsElement.textContent =
       this.dobledigits && secondsValue < 10 ? `0${secondsValue}` : secondsValue;
-    // this.secondsElement.textContent = secondsValue;
   };
-
+  // Function that handles the timer PLAY event
   handlePlayTimer = () => {
-    if (this.startInSeconds === 0) {
-      this.startInSeconds = this.start;
-    }
-
     if (this.reverse) {
       this.timer = setInterval(() => {
         if (this.startInSeconds <= 0) {
@@ -95,11 +99,11 @@ export class ShoppingCartTimer extends LitElement {
             composed: true,
           });
           this.dispatchEvent(event);
+          this.startInSeconds = this.start;
+          this.renderDisplay(this.startInSeconds);
 
           //  AUTORESET
           if (this.autoreset) {
-            this.startInSeconds = this.start;
-            this.renderDisplay(this.startInSeconds);
             this.handlePlayTimer();
           }
           return;
@@ -108,7 +112,6 @@ export class ShoppingCartTimer extends LitElement {
         this.renderDisplay(this.startInSeconds);
       }, 1000);
     } else {
-      this.startInSeconds = 0;
       this.timer = setInterval(() => {
         if (this.startInSeconds >= this.limit) {
           clearInterval(this.timer);
@@ -119,9 +122,11 @@ export class ShoppingCartTimer extends LitElement {
             bubbles: true,
             composed: true,
           });
+          this.dispatchEvent(event);
+          this.startInSeconds = 0;
+          this.renderDisplay(this.startInSeconds);
+          //  AUTORESET
           if (this.autoreset) {
-            this.startInSeconds = 0;
-            this.renderDisplay(this.startInSeconds);
             this.handlePlayTimer();
           }
           return;
@@ -131,12 +136,19 @@ export class ShoppingCartTimer extends LitElement {
       }, 1000);
     }
   };
-
+  // Function that handles the timer PAUSE event
   handlePauseTimer = () => {
     clearInterval(this.timer);
   };
+  // Function that handles the timer RESET event
   handleResetTimer = () => {
-    console.log("Child RESET");
+    clearInterval(this.timer);
+    if (this.reverse) {
+      this.startInSeconds = this.start;
+    } else if (!this.reverse) {
+      this.startInSeconds = 0;
+    }
+    this.renderDisplay(this.startInSeconds);
   };
 
   render() {
