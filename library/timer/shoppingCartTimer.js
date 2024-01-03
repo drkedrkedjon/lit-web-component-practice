@@ -43,12 +43,15 @@ export class ShoppingCartTimer extends LitElement {
   }
 
   firstUpdated() {
+    this.minutesElement = this.shadowRoot.getElementById("minutes");
+    this.secondsElement = this.shadowRoot.getElementById("seconds");
+
     if (this.reverse) {
       this.startInSeconds = this.start;
     } else if (!this.reverse) {
       this.startInSeconds = 0;
     }
-    // this.renderDisplay(this.startInSeconds); PENDIENTE
+    this.renderDisplay(this.startInSeconds);
 
     // AUTOSTART
     if (this.autostart) {
@@ -70,8 +73,8 @@ export class ShoppingCartTimer extends LitElement {
   }
   // when we want to update the DOM before the component is rendered
   updated() {
-    this.minutesElement = this.shadowRoot.getElementById("minutes");
-    this.secondsElement = this.shadowRoot.getElementById("seconds");
+    // this.minutesElement = this.shadowRoot.getElementById("minutes");
+    // this.secondsElement = this.shadowRoot.getElementById("seconds");
   }
   // Function that renders data to display
   renderDisplay = (time) => {
