@@ -1,6 +1,6 @@
 import { LitElement, css, html } from "lit";
 
-export class ShoppingCartTimer extends LitElement {
+export class timerDisplay extends LitElement {
   static get styles() {
     return css`
       .display {
@@ -33,6 +33,7 @@ export class ShoppingCartTimer extends LitElement {
     start: { type: Number },
     limit: { type: Number },
     dobledigits: { type: Boolean },
+    shoppingcarttimer: { type: Boolean },
   };
   // What happens when the component is mounted
   connectedCallback() {
@@ -43,6 +44,8 @@ export class ShoppingCartTimer extends LitElement {
   }
 
   firstUpdated() {
+    this.daysElement = this.shadowRoot.getElementById("days");
+    this.hoursElement = this.shadowRoot.getElementById("hours");
     this.minutesElement = this.shadowRoot.getElementById("minutes");
     this.secondsElement = this.shadowRoot.getElementById("seconds");
 
@@ -78,13 +81,37 @@ export class ShoppingCartTimer extends LitElement {
   }
   // Function that renders data to display
   renderDisplay = (time) => {
-    const minutesValue = Math.floor(time / 60);
-    const secondsValue = time % 60;
+    if (!this.shoppingcarttimer) {
+      const daysValue = Math.floor(time / 86400);
+      const hoursValue = Math.floor(time / 3600);
+      const minutesValue = Math.floor(time / 60);
+      const secondsValue = time % 60;
 
-    this.minutesElement.textContent =
-      this.dobledigits && minutesValue < 10 ? `0${minutesValue}` : minutesValue;
-    this.secondsElement.textContent =
-      this.dobledigits && secondsValue < 10 ? `0${secondsValue}` : secondsValue;
+      this.daysElement.textContent =
+        this.dobledigits && daysValue < 10 ? `0${daysValue}` : daysValue;
+      this.hoursElement.textContent =
+        this.dobledigits && hoursValue < 10 ? `0${hoursValue}` : hoursValue;
+      this.minutesElement.textContent =
+        this.dobledigits && minutesValue < 10
+          ? `0${minutesValue}`
+          : minutesValue;
+      this.secondsElement.textContent =
+        this.dobledigits && secondsValue < 10
+          ? `0${secondsValue}`
+          : secondsValue;
+    } else {
+      const minutesValue = Math.floor(time / 60);
+      const secondsValue = time % 60;
+
+      this.minutesElement.textContent =
+        this.dobledigits && minutesValue < 10
+          ? `0${minutesValue}`
+          : minutesValue;
+      this.secondsElement.textContent =
+        this.dobledigits && secondsValue < 10
+          ? `0${secondsValue}`
+          : secondsValue;
+    }
   };
   // Function that handles the timer PLAY event
   handlePlayTimer = () => {
@@ -158,15 +185,39 @@ export class ShoppingCartTimer extends LitElement {
     return html`
       <div class="display">
         <div
-          id="minutes"
-          class="minutes"
+          id="days"
+          class="days"
         >
           00
         </div>
         <div
           id="separador"
           class="separador"
-        >:</div>
+        >
+          :
+        </div>
+        <div
+          id="hours"
+          class="hours"
+        >
+          <div
+            id="separador"
+            class="separador"
+          >
+            :
+          </div>
+          <div
+            id="minutes"
+            class="minutes"
+          >
+            00
+          </div>
+          <div
+            id="separador"
+            class="separador"
+          >
+            :
+          </div>
           <div
             id="seconds"
             class="seconds"
@@ -179,4 +230,4 @@ export class ShoppingCartTimer extends LitElement {
   }
 }
 
-window.customElements.define("shopping-cart-timer", ShoppingCartTimer);
+window.customElements.define("timer-display", timerDisplay);
