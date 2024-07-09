@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit-element";
 
+
 export class TimerComponent extends LitElement {
   static styles = css`
     .timer-container {
